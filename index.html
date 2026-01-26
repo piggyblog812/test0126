@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>保衛站 - 專業維修服務官網</title>
+    <title>保衛站 - 專業維修服務官網 (平滑換圖版)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
     <style>
         :root { 
@@ -25,7 +25,7 @@
         .logo { font-weight: bold; font-size: 1.2rem; }
         .menu-btn { font-size: 24px; cursor: pointer; border: none; background: none; }
 
-        /* --- 輪播區塊 (優化版) --- */
+        /* --- 輪播區塊 (重點微調部分) --- */
         .slider-wrapper { position: relative; width: 100%; overflow: hidden; background: #fff; }
         .slider-container {
             display: flex; 
@@ -34,7 +34,6 @@
             user-select: none; 
             touch-action: pan-y;
             will-change: transform;
-            /* 移除 transition 改由 JS 動態控制，防止連續滑動出錯 */
         }
         .slider-container:active { cursor: grabbing; }
         
@@ -55,7 +54,7 @@
         .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--dot-color); transition: 0.3s; cursor: pointer; }
         .dot.active { background: var(--primary-green); transform: scale(1.3); }
 
-        /* --- 內容區塊 --- */
+        /* --- 其他區塊樣式 --- */
         .module-wrap { padding: 40px; background: #fff; border-radius: 15px; height: 100%; display: flex; flex-direction: column; justify-content: center; }
         .feature-img { width: 100%; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         .section-title { font-weight: 800; margin-bottom: 30px; position: relative; display: inline-block; }
@@ -63,7 +62,6 @@
         .table-container { background: #fff; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.05); border: 1px solid #eee; }
         .table-nowrap td, .table-nowrap th { white-space: nowrap; padding: 15px 25px !important; }
         
-        /* 側邊欄與按鈕 */
         .sidebar { position: fixed; top: 0; left: 0; width: 280px; height: 100%; background: #fff; z-index: 1100; padding: 20px; transform: translateX(-110%); transition: 0.3s; }
         .sidebar.active { transform: translateX(0); }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); visibility: hidden; opacity: 0; transition: 0.3s; z-index: 1050; }
@@ -109,34 +107,7 @@
     </div>
 
     <section id="service1" class="py-5">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-md-6 mb-4"><img src="https://via.placeholder.com/600x400?text=Screen+Repair" class="feature-img"></div>
-                <div class="col-md-6">
-                    <div class="module-wrap">
-                        <h2 class="section-title">iPhone 螢幕維修</h2>
-                        <p>我們提供現場 30 分鐘快速更換螢幕服務。</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <section id="prices" class="py-5 bg-light">
-        <div class="container">
-            <div class="table-container">
-                <div class="table-responsive">
-                    <table class="table table-hover table-nowrap mb-0">
-                        <thead class="table-dark">
-                            <tr><th>機型名稱</th><th>更換電池</th><th>更換螢幕</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr><td class="fw-bold">iPhone 15 Pro</td><td>$2,200</td><td>$11,500</td></tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+        <div class="container"><div class="row align-items-center"><div class="col-md-6 mb-4"><img src="https://via.placeholder.com/600x400?text=Screen+Repair" class="feature-img"></div><div class="col-md-6"><div class="module-wrap"><h2 class="section-title">iPhone 螢幕維修</h2><p>我們提供現場 30 分鐘快速更換螢幕服務。</p></div></div></div></div>
     </section>
 
     <div class="fixed-action-buttons">
@@ -153,7 +124,7 @@
         let isDragging = false;
         let startX, currentMoveX;
         let timer;
-        let isTransitioning = false; // 新增：防止動畫中連續觸發導致白色畫面
+        let isTransitioning = false;
 
         function setPosition(xOffset) {
             slider.style.transform = `translateX(${xOffset}px)`;
@@ -161,7 +132,8 @@
 
         function updateSlider() {
             const width = slider.offsetWidth;
-            slider.style.transition = 'transform 0.4s cubic-bezier(0.2, 0, 0.2, 1)';
+            // 微調亮點：延長至 0.8s，並使用優雅的貝茲曲線
+            slider.style.transition = 'transform 0.8s cubic-bezier(0.25, 1, 0.5, 1)';
             setPosition(-currentIndex * width);
             updateDots();
         }
@@ -173,9 +145,9 @@
             dots.forEach((dot, i) => dot.classList.toggle('active', i === dotIdx));
         }
 
-        // 核心修正：監聽動畫結束，立即重置位置以免出現白屏
         slider.addEventListener('transitionend', () => {
             isTransitioning = false;
+            // 到達緩衝邊界時，瞬間無感切換 (transition 改為 none)
             if (currentIndex === 0) {
                 slider.style.transition = 'none';
                 currentIndex = slideCount;
@@ -188,9 +160,10 @@
         });
 
         function dragStart(e) {
-            if (isTransitioning) return; // 動畫中禁止再次拖動
+            if (isTransitioning) return;
             isDragging = true;
             startX = getX(e);
+            currentMoveX = 0;
             slider.style.transition = 'none';
             clearInterval(timer);
         }
@@ -209,12 +182,12 @@
             isTransitioning = true;
             const width = slider.offsetWidth;
 
-            if (currentMoveX < -width * 0.15) { // 降低閾值到 15% 增加順暢度
+            // 只要滑動超過 15% 寬度就啟動平滑換圖
+            if (currentMoveX < -width * 0.15) {
                 currentIndex++;
             } else if (currentMoveX > width * 0.15) {
                 currentIndex--;
             }
-            currentMoveX = 0;
             updateSlider();
             startTimer();
         }
@@ -230,7 +203,7 @@
 
         function startTimer() { 
             timer = setInterval(() => { 
-                if (!isDragging) {
+                if (!isDragging && !isTransitioning) {
                     currentIndex++; 
                     isTransitioning = true;
                     updateSlider();
@@ -247,12 +220,15 @@
             });
         });
 
-        // 初始化位置
-        window.addEventListener('resize', () => setPosition(-currentIndex * slider.offsetWidth));
+        window.addEventListener('resize', () => {
+            slider.style.transition = 'none';
+            setPosition(-currentIndex * slider.offsetWidth);
+        });
+        
         setPosition(-currentIndex * slider.offsetWidth);
         startTimer();
 
-        // 原有選單邏輯
+        // 側邊選單與置頂邏輯
         document.getElementById('openMenu').onclick = () => {
             document.getElementById('sidebar').classList.add('active');
             document.getElementById('overlay').classList.add('active');
