@@ -25,7 +25,7 @@
         .logo { font-weight: bold; font-size: 1.2rem; }
         .menu-btn { font-size: 24px; cursor: pointer; border: none; background: none; }
 
-        /* --- 2. 輪播區塊 (修正重點：改用 Transform 防止空白) --- */
+        /* --- 2. 高階絲滑輪播區塊 (修正版) --- */
         .slider-wrapper { position: relative; width: 100%; overflow: hidden; background: #fff; }
         .slider-container {
             display: flex; 
@@ -33,9 +33,7 @@
             cursor: grab; 
             user-select: none; 
             touch-action: pan-y;
-            will-change: transform;
-            /* 動畫時間拉長至 0.8s */
-            transition: transform 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+            will-change: transform; /* 硬體加速，確保流暢度 */
         }
         .slider-container:active { cursor: grabbing; }
         
@@ -44,7 +42,9 @@
             display: flex; align-items: center; justify-content: center;
             font-size: 2rem; color: white; font-weight: bold;
         }
-        /* 圖片背景顏色保留 */
+        /* 防止圖片干擾滑動手勢 */
+        .slide img { pointer-events: none; -webkit-user-drag: none; width: 100%; height: 100%; object-fit: cover; }
+
         .p1 { background: #85868A; } .p2 { background: #A0A1A5; }
         .p3 { background: #6C6D71; } .p4 { background: #4D4E52; }
         
@@ -55,24 +55,28 @@
         .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--dot-color); transition: 0.3s; cursor: pointer; }
         .dot.active { background: var(--primary-green); transform: scale(1.3); }
 
-        /* --- 3. 內容與表格樣式 (完全保留) --- */
+        /* --- 3. 服務介紹與其他區塊保持不變 --- */
         .module-wrap { padding: 40px; background: #fff; border-radius: 15px; height: 100%; display: flex; flex-direction: column; justify-content: center; }
         .feature-img { width: 100%; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         .section-title { font-weight: 800; margin-bottom: 30px; position: relative; display: inline-block; }
         .section-title::after { content: ""; width: 60%; height: 5px; background: var(--primary-yellow); position: absolute; bottom: -10px; left: 0; }
         .table-container { background: #fff; border-radius: 15px; overflow: hidden; box-shadow: 0 5px 20px rgba(0,0,0,0.05); border: 1px solid #eee; }
         .table-nowrap td, .table-nowrap th { white-space: nowrap; padding: 15px 25px !important; }
-        
-        /* 側邊欄與按鈕邏輯保留 */
-        .sidebar { position: fixed; top: 0; left: 0; width: 280px; height: 100%; background: #fff; z-index: 1100; padding: 20px; transform: translateX(-110%); transition: 0.3s; }
-        .sidebar.active { transform: translateX(0); }
+        .sidebar { position: fixed; top: 0; left: 0; width: 280px; height: 100%; background: #fff; z-index: 1100; padding: 20px; transform: translateX(-110%); transition: 0.3s; box-sizing: border-box; }
+        .sidebar.active { transform: translateX(0); box-shadow: 5px 0 15px rgba(0,0,0,0.1); }
         .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); visibility: hidden; opacity: 0; transition: 0.3s; z-index: 1050; }
         .overlay.active { visibility: visible; opacity: 1; }
         .fixed-action-buttons { position: fixed; right: 20px; bottom: 30px; display: flex; flex-direction: column; gap: 12px; z-index: 1000; }
-        .fab-btn { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; color: white; font-size: 12px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.2); border: none; }
-        .fab-line { background-color: #06C755; } .fab-phone { background-color: #333; }
+        .fab-btn { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; color: white; font-size: 12px; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.2); border: none; cursor: pointer; transition: 0.2s; }
+        .fab-line { background-color: #06C755; }
+        .fab-phone { background-color: #333; }
         .fab-top { background-color: #fff; color: #333; opacity: 0; visibility: hidden; transition: 0.3s; }
         .fab-top.show { opacity: 1; visibility: visible; }
+
+        @media (max-width: 768px) {
+            .module-wrap { padding: 20px; text-align: center; }
+            .section-title::after { left: 20%; }
+        }
     </style>
 </head>
 <body>
@@ -82,7 +86,9 @@
         <h2 class="fw-bold mb-4">網站地圖</h2>
         <ul class="list-unstyled">
             <li class="py-3 border-bottom"><a href="#service1" class="text-decoration-none text-dark">iPhone 螢幕維修</a></li>
+            <li class="py-3 border-bottom"><a href="#service2" class="text-decoration-none text-dark">電池保養服務</a></li>
             <li class="py-3 border-bottom"><a href="#prices" class="text-decoration-none text-dark">維修價目表</a></li>
+            <li class="py-3 border-bottom"><a href="#faq" class="text-decoration-none text-dark">常見問題</a></li>
         </ul>
     </nav>
 
@@ -93,12 +99,12 @@
 
     <div class="slider-wrapper">
         <div class="slider-container" id="slider">
-            <div class="slide p4">年度維修優惠中 (4)</div>
-            <div class="slide p1">iPhone 螢幕現場快修 (1)</div>
-            <div class="slide p2">原廠等級電池更換 (2)</div>
-            <div class="slide p3">全台連鎖 售後無憂 (3)</div>
-            <div class="slide p4">年度維修優惠中 (4)</div>
-            <div class="slide p1">iPhone 螢幕現場快修 (1)</div>
+            <div class="slide p4">年度維修優惠中</div>
+            <div class="slide p1">iPhone 螢幕現場快修</div>
+            <div class="slide p2">原廠等級電池更換</div>
+            <div class="slide p3">全台連鎖 售後無憂</div>
+            <div class="slide p4">年度維修優惠中</div>
+            <div class="slide p1">iPhone 螢幕現場快修</div>
         </div>
         <div class="dots-container" id="dotsContainer">
             <span class="dot active"></span>
@@ -111,13 +117,60 @@
     <section id="service1" class="py-5">
         <div class="container">
             <div class="row align-items-center">
-                <div class="col-md-6 mb-4">
-                    <img src="https://via.placeholder.com/600x400?text=Screen+Repair" class="feature-img">
-                </div>
+                <div class="col-md-6 mb-4"><img src="1296x.jpg" class="feature-img" alt="螢幕維修"></div>
                 <div class="col-md-6">
                     <div class="module-wrap">
                         <h2 class="section-title">iPhone 螢幕維修</h2>
-                        <p>我們提供現場 30 分鐘快速更換螢幕服務。</p>
+                        <p>我們提供現場 30 分鐘快速更換螢幕服務。不論是顯示異常、觸控失靈、或是玻璃破裂，我們都能完美修復。</p>
+                        <ul class="list-unstyled text-muted">
+                            <li>✅ 高品質 BSMI 認證零件</li>
+                            <li>✅ 工程師現場一對一維修</li>
+                            <li>✅ 維修後提供完整功能測試</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-5 bg-light">
+        <div class="container text-center">
+            <h2 class="fw-bold mb-5">為什麼選擇保衛站？</h2>
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="p-4 bg-white rounded shadow-sm h-100">
+                        <div class="display-5 mb-3">🛠️</div>
+                        <h4>專業技術</h4>
+                        <p class="text-muted">十年以上維修經驗，精修各種主機板疑難雜症。</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-4 bg-white rounded shadow-sm h-100">
+                        <div class="display-5 mb-3">⚡</div>
+                        <h4>快速取件</h4>
+                        <p class="text-muted">現場備料充足，簡單維修最快 20 分鐘即可完工。</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="p-4 bg-white rounded shadow-sm h-100">
+                        <div class="display-5 mb-3">🛡️</div>
+                        <h4>售後保固</h4>
+                        <p class="text-muted">所有維修零件皆提供長效保固，全台連鎖服務。</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="service2" class="py-5">
+        <div class="container">
+            <div class="row align-items-center flex-md-row-reverse">
+                <div class="col-md-6 mb-4"><img src="https://via.placeholder.com/600x400?text=Battery+Service" class="feature-img" alt="電池更換"></div>
+                <div class="col-md-6">
+                    <div class="module-wrap">
+                        <h2 class="section-title">電池健康度保養</h2>
+                        <p>您的手機是否耗電飛快？我們提供原廠等級電池更換服務，現場更換不留機，並提供電池健康度數據檢測。</p>
+                        <div class="mt-2"><a href="https://line.me" class="btn btn-warning fw-bold">立即預約檢測</a></div>
                     </div>
                 </div>
             </div>
@@ -126,20 +179,49 @@
 
     <section id="prices" class="py-5 bg-light">
         <div class="container">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold">維修價格透明化</h2>
+                <div class="text-muted d-md-none small">💡 左右滑動查看完整表格</div>
+            </div>
             <div class="table-container">
                 <div class="table-responsive">
                     <table class="table table-hover table-nowrap mb-0">
                         <thead class="table-dark">
-                            <tr><th>機型名稱</th><th>更換電池</th><th>更換螢幕</th></tr>
+                            <tr><th>機型名稱</th><th>更換電池</th><th>更換螢幕</th><th>鏡頭維修</th><th>主機板維修</th><th>後玻璃更換</th></tr>
                         </thead>
                         <tbody>
-                            <tr><td class="fw-bold">iPhone 15 Pro</td><td>$2,200</td><td>$11,500</td></tr>
+                            <tr><td class="fw-bold">iPhone 15 Pro</td><td>$2,200</td><td>$11,500</td><td>$4,500</td><td>現場檢測</td><td>$5,000</td></tr>
+                            <tr><td class="fw-bold">iPhone 15</td><td>$2,000</td><td>$9,500</td><td>$3,800</td><td>現場檢測</td><td>$4,500</td></tr>
+                            <tr><td class="fw-bold">iPhone 14 Pro</td><td>$1,900</td><td>$9,500</td><td>$3,800</td><td>現場檢測</td><td>$4,500</td></tr>
+                            <tr><td class="fw-bold">iPhone 14</td><td>$1,800</td><td>$8,500</td><td>$3,500</td><td>現場檢測</td><td>$4,000</td></tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
     </section>
+
+    <section id="faq" class="py-5">
+        <div class="container" style="max-width: 800px;">
+            <h2 class="text-center fw-bold mb-5">常見問題</h2>
+            <div class="mb-4">
+                <h5 class="fw-bold text-success">Q: 維修資料會不見嗎？</h5>
+                <p>A: 正常維修不會動到資料，但建議維修前仍先進行資料備份以策萬全。</p>
+            </div>
+            <hr>
+            <div class="mb-4">
+                <h5 class="fw-bold text-success">Q: 維修需要留機嗎？</h5>
+                <p>A: 大部分零件更換（螢幕、電池）皆可現場取件，若為主機板故障則需 1-3 個工作天。</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-dark text-white py-5">
+        <div class="container text-center">
+            <p>© 2024 保衛站 GUARD STATION | 專業維修中心</p>
+            <small class="text-muted">營業時間：11:00 - 21:00 | 地址：桃園市某某路123號 | 電話：03-1234567</small>
+        </div>
+    </footer>
 
     <div class="fixed-action-buttons">
         <a href="https://line.me" class="fab-btn fab-line" target="_blank">LINE</a>
@@ -148,28 +230,57 @@
     </div>
 
     <script>
+
         const slider = document.getElementById('slider');
+        const sliderWrapper = document.querySelector('.slider-wrapper');
         const dots = document.querySelectorAll('.dot');
-        const slideCount = 4;
-        let currentIndex = 1; 
+        const slideCount = 4; // 真正的輪播張數（不含前後複製張）
+        let currentIndex = 1; // 1..slideCount 為真實張；0 與 slideCount+1 為複製張
         let isDragging = false;
-        let startX, currentMoveX;
+        let startX = 0;
+        let currentTranslate = 0;
+        let prevTranslate = 0;
         let timer;
-        let isAnimating = false;
 
-        function setPosition(xOffset) {
-            slider.style.transform = `translateX(${xOffset}px)`;
+        // 單張寬度：使用外層可視區寬度，避免計算誤差
+        function getSlideWidth() {
+            return sliderWrapper.getBoundingClientRect().width;
         }
 
-        function updateSlider() {
-            const width = slider.offsetWidth;
-            isAnimating = true;
-            // 設定平滑換圖時間
-            slider.style.transition = 'transform 0.8s cubic-bezier(0.25, 1, 0.5, 1)';
-            setPosition(-currentIndex * width);
-            updateDots();
+        // 讀取目前 translateX（支援 matrix / matrix3d）
+        function getTranslateX() {
+            const style = window.getComputedStyle(slider);
+            const transform = style.transform || style.webkitTransform;
+            if (!transform || transform === 'none') return 0;
+
+            const m3d = transform.match(/^matrix3d\((.+)\)$/);
+            if (m3d) {
+                const v = m3d[1].split(',').map(s => parseFloat(s.trim()));
+                return v[12] || 0;
+            }
+            const m2d = transform.match(/^matrix\((.+)\)$/);
+            if (m2d) {
+                const v = m2d[1].split(',').map(s => parseFloat(s.trim()));
+                return v[4] || 0;
+            }
+            return 0;
         }
 
+        function clamp(num, min, max) {
+            return Math.max(min, Math.min(max, num));
+        }
+
+        // 初始化位置（統一用 px）
+        function setPosition() {
+            const w = getSlideWidth();
+            currentIndex = clamp(currentIndex, 0, slideCount + 1);
+            slider.style.transform = `translateX(${-currentIndex * w}px)`;
+            currentTranslate = -currentIndex * w;
+            prevTranslate = currentTranslate;
+        }
+        setPosition();
+
+        // 更新圓點樣式
         function updateDots() {
             let dotIdx = currentIndex - 1;
             if (currentIndex === 0) dotIdx = slideCount - 1;
@@ -177,82 +288,142 @@
             dots.forEach((dot, i) => dot.classList.toggle('active', i === dotIdx));
         }
 
-        // 動畫結束後的無縫位置校準
-        slider.addEventListener('transitionend', () => {
-            isAnimating = false;
-            if (currentIndex === 0) {
-                slider.style.transition = 'none';
-                currentIndex = slideCount;
-                setPosition(-currentIndex * slider.offsetWidth);
-            } else if (currentIndex === slideCount + 1) {
-                slider.style.transition = 'none';
-                currentIndex = 1;
-                setPosition(-currentIndex * slider.offsetWidth);
-            }
-        });
+        // --- 手勢事件綁定 ---
+        slider.addEventListener('mousedown', dragStart);
+        slider.addEventListener('touchstart', dragStart, { passive: true });
+        slider.addEventListener('mousemove', dragging);
+        slider.addEventListener('touchmove', dragging, { passive: true });
+        window.addEventListener('mouseup', dragEnd);
+        window.addEventListener('touchend', dragEnd);
 
-        // 觸控開始
-        slider.addEventListener('touchstart', (e) => {
-            if (isAnimating) return;
+        function dragStart(e) {
             isDragging = true;
-            startX = e.touches[0].pageX;
-            slider.style.transition = 'none';
             clearInterval(timer);
-        }, {passive: true});
 
-        // 觸控中
-        slider.addEventListener('touchmove', (e) => {
+            // 關閉動畫，讓手勢「可抓取」目前位置
+            slider.style.transition = 'none';
+
+            // 把動畫途中/已到複製張的狀態讀出來
+            const w = getSlideWidth();
+            let t = getTranslateX();
+
+            // 先用目前位置推回 index（避免「快速連滑」時 currentIndex 被卡在複製張）
+            currentIndex = clamp(Math.round(-t / w), 0, slideCount + 1);
+
+            // 若「剛好」停在複製張（0 或 slideCount+1），立即無感跳回真實張（避免繼續滑會出現白色空窗）
+            const epsilon = 3; // px 容錯
+            const minT = -(slideCount + 1) * w; // 最右端複製張位置
+            if (currentIndex === 0 && Math.abs(t - 0) < epsilon) {
+                currentIndex = slideCount;
+                t = -currentIndex * w;
+                slider.style.transform = `translateX(${t}px)`;
+            } else if (currentIndex === slideCount + 1 && Math.abs(t - minT) < epsilon) {
+                currentIndex = 1;
+                t = -currentIndex * w;
+                slider.style.transform = `translateX(${t}px)`;
+            }
+
+            startX = getX(e);
+            prevTranslate = t;
+            currentTranslate = t;
+        }
+
+        function dragging(e) {
             if (!isDragging) return;
-            const currentX = e.touches[0].pageX;
-            currentMoveX = currentX - startX;
-            const width = slider.offsetWidth;
-            setPosition(-currentIndex * width + currentMoveX);
-        }, {passive: true});
 
-        // 觸控結束
-        slider.addEventListener('touchend', () => {
+            const w = getSlideWidth();
+            const currentX = getX(e);
+            const moveX = currentX - startX;
+
+            const maxT = 0;
+            const minT = -(slideCount + 1) * w;
+            currentTranslate = clamp(prevTranslate + moveX, minT, maxT);
+
+            slider.style.transform = `translateX(${currentTranslate}px)`;
+        }
+
+        function dragEnd(e) {
             if (!isDragging) return;
             isDragging = false;
-            const width = slider.offsetWidth;
-            // 滑動超過 15% 則換頁
-            if (Math.abs(currentMoveX) > width * 0.15) {
-                if (currentMoveX > 0) currentIndex--;
-                else currentIndex++;
-            }
-            currentMoveX = 0;
-            updateSlider();
-            startTimer();
-        });
 
-        function startTimer() { 
-            timer = setInterval(() => { 
-                if (!isDragging) {
-                    currentIndex++; 
-                    updateSlider();
+            const w = getSlideWidth();
+            const movedBy = currentTranslate - prevTranslate;
+
+            // 再次用位置推回 index，確保狀態一致
+            currentIndex = clamp(Math.round(-prevTranslate / w), 0, slideCount + 1);
+
+            // 門檻：滑動超過 20% 就換張
+            if (movedBy < -w * 0.2) currentIndex++;
+            else if (movedBy > w * 0.2) currentIndex--;
+
+            currentIndex = clamp(currentIndex, 0, slideCount + 1);
+
+            moveToSlide();
+            startTimer();
+        }
+
+        function getX(e) {
+            return e.type.includes('mouse') ? e.pageX : e.touches[0].pageX;
+        }
+
+        function moveToSlide() {
+            // 你要的：手機版「滑到下一張」過程時間 0.6 秒（桌機 0.4 秒）
+            const isMobile = window.matchMedia('(max-width: 768px)').matches;
+            const duration = isMobile ? 0.6 : 0.4;
+
+            slider.style.transition = `transform ${duration}s cubic-bezier(0.25, 0.46, 0.45, 0.94)`;
+            setPosition();
+            updateDots();
+
+            // 無縫回歸判斷（到複製張後瞬間跳回真實張）
+            slider.addEventListener('transitionend', () => {
+                const w = getSlideWidth();
+                if (currentIndex === 0) {
+                    slider.style.transition = 'none';
+                    currentIndex = slideCount;
+                    slider.style.transform = `translateX(${-currentIndex * w}px)`;
                 }
-            }, 5000); 
+                if (currentIndex === slideCount + 1) {
+                    slider.style.transition = 'none';
+                    currentIndex = 1;
+                    slider.style.transform = `translateX(${-currentIndex * w}px)`;
+                }
+                updateDots();
+
+                // 同步狀態（避免下一次拖曳時「抓到舊位置」）
+                currentTranslate = -currentIndex * w;
+                prevTranslate = currentTranslate;
+            }, { once: true });
+        }
+
+        // 自動輪播與圓點點擊（維持原本 5 秒輪播等待）
+        function startTimer() {
+            clearInterval(timer);
+            timer = setInterval(() => {
+                currentIndex++;
+                moveToSlide();
+            }, 5000);
         }
 
         dots.forEach((dot, i) => {
             dot.addEventListener('click', () => {
-                if (isAnimating) return;
                 clearInterval(timer);
                 currentIndex = i + 1;
-                updateSlider();
+                moveToSlide();
                 startTimer();
             });
         });
 
-        window.addEventListener('resize', () => {
-            slider.style.transition = 'none';
-            setPosition(-currentIndex * slider.offsetWidth);
-        });
-
-        // 初始化
-        setPosition(-currentIndex * slider.offsetWidth);
         startTimer();
 
-        // 原始選單與按鈕邏輯
+        // 旋轉螢幕 / 改變寬度時，重新定位避免跑版與白屏
+        window.addEventListener('resize', () => {
+            slider.style.transition = 'none';
+            setPosition();
+            updateDots();
+        });
+
+        // 其他功能 (選單、置頂)
         document.getElementById('openMenu').onclick = () => {
             document.getElementById('sidebar').classList.add('active');
             document.getElementById('overlay').classList.add('active');
@@ -267,6 +438,7 @@
             else backToTopBtn.classList.remove('show');
         });
         backToTopBtn.onclick = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+
     </script>
 </body>
 </html>
